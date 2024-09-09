@@ -233,9 +233,9 @@ replacing the placeholder %d with the prefix argument."
 (defcustom desktop-environment-update-exwm-global-keys :global
   "Determines interacting with EXWM bindings when enabling/disabling the mode."
   :type '(radio
-          (const :tag "Global" :doc "Use `exwm-input-set-key' on mode activation to set bindings." :global)
-          (const :tag "Prefix" :doc "Add/Remove keys to `exwm-input-prefix-keys' when enabling/disabling the mode." :prefix)
-          (const :tag "Off" :doc "Do not touch EXWM key bindings." nil)))
+	  (const :tag "Global" :doc "Use `exwm-input-set-key' on mode activation to set bindings." :global)
+	  (const :tag "Prefix" :doc "Add/Remove keys to `exwm-input-prefix-keys' when enabling/disabling the mode." :prefix)
+	  (const :tag "Off" :doc "Do not touch EXWM key bindings." nil)))
 
 ;;; Helper functions - desktop-environment--shell-command-to-string
 
@@ -259,6 +259,13 @@ replacing the placeholder %d with the prefix argument."
   (message "New brightness value: %s" (desktop-environment-brightness-get)))
 
 
+;;; Helper functions - music
+
+(defun desktop-environment--process-filter (command msg)
+  "Start a process of COMMAND and message MSG."
+  (let ((proc (start-process-shell-command "desktop-environment-music" nil command)))
+    (set-process-filter proc (lambda (proc line) (message "%s" msg)))))
+
 ;;; Helper functions - volume
 
 (defun desktop-environment-volume-get ()
@@ -279,36 +286,36 @@ replacing the placeholder %d with the prefix argument."
   "Return the new keyboard backlight value as a % of maximum backlight."
   (let ((backlight-level (desktop-environment-keyboard-backlight-get)))
     (if (eq backlight-level 0)
-        "0.0"
+	"0.0"
       (*
        (/ (* backlight-level 1.0)
-          (* (desktop-environment-keyboard-backlight-get-max) 1.0))
+	  (* (desktop-environment-keyboard-backlight-get-max) 1.0))
        100))))
 
 (defun desktop-environment-keyboard-backlight-get ()
   "Return a number representing keyboard backlight current level."
   (dbus-call-method :system
-                    "org.freedesktop.UPower"
-                    "/org/freedesktop/UPower/KbdBacklight"
-                    "org.freedesktop.UPower.KbdBacklight"
-                    "GetBrightness"))
+		    "org.freedesktop.UPower"
+		    "/org/freedesktop/UPower/KbdBacklight"
+		    "org.freedesktop.UPower.KbdBacklight"
+		    "GetBrightness"))
 
 (defun desktop-environment-keyboard-backlight-get-max ()
   "Return a number representing keyboard backlight maximum level."
   (dbus-call-method :system
-                    "org.freedesktop.UPower"
-                    "/org/freedesktop/UPower/KbdBacklight"
-                    "org.freedesktop.UPower.KbdBacklight"
-                    "GetMaxBrightness"))
+		    "org.freedesktop.UPower"
+		    "/org/freedesktop/UPower/KbdBacklight"
+		    "org.freedesktop.UPower.KbdBacklight"
+		    "GetMaxBrightness"))
 
 (defun desktop-environment-keyboard-backlight-set (value)
   "Set keyboard backlight to VALUE."
   (dbus-call-method :system
-                    "org.freedesktop.UPower"
-                    "/org/freedesktop/UPower/KbdBacklight"
-                    "org.freedesktop.UPower.KbdBacklight"
-                    "SetBrightness"
-                    :int32 value)
+		    "org.freedesktop.UPower"
+		    "/org/freedesktop/UPower/KbdBacklight"
+		    "org.freedesktop.UPower.KbdBacklight"
+		    "SetBrightness"
+		    :int32 value)
   (message "New keyboard value: %s%%" (desktop-environment-keyboard-backlight-percent)))
 
 
@@ -370,26 +377,26 @@ replacing the placeholder %d with the prefix argument."
   "Toggle between muted and un-muted."
   (interactive)
   (message (let ((output (desktop-environment--shell-command-to-string desktop-environment-volume-toggle-command)))
-             (if desktop-environment-volume-toggle-regexp
-                 (format
-                  "Sound %s"
-                  (save-match-data
-                    (string-match desktop-environment-volume-toggle-regexp output)
-                    (match-string 0 output)))
-               "Sound toggled"))))
+	     (if desktop-environment-volume-toggle-regexp
+		 (format
+		  "Sound %s"
+		  (save-match-data
+		    (string-match desktop-environment-volume-toggle-regexp output)
+		    (match-string 0 output)))
+	       "Sound toggled"))))
 
 ;;;###autoload
 (defun desktop-environment-toggle-microphone-mute ()
   "Toggle microphone between muted and un-muted."
   (interactive)
   (message (let ((output (desktop-environment--shell-command-to-string desktop-environment-volume-toggle-microphone-command)))
-             (if desktop-environment-volume-toggle-regexp
-                 (format
-                  "Mic %s"
-                  (save-match-data
-                    (string-match desktop-environment-volume-toggle-regexp output)
-                    (match-string 0 output)))
-               "Mic toggled"))))
+	     (if desktop-environment-volume-toggle-regexp
+		 (format
+		  "Mic %s"
+		  (save-match-data
+		    (string-match desktop-environment-volume-toggle-regexp output)
+		    (match-string 0 output)))
+	       "Mic toggled"))))
 
 
 ;;; Commands - keyboard backlight
@@ -431,13 +438,13 @@ In order to delay the screenshot,
 the command `desktop-environment-screenshot-command'."
   (interactive "P")
   (let ((default-directory (expand-file-name desktop-environment-screenshot-directory))
-        (command (if (and delay
-                          (numberp delay)
-                          (> delay 0))
-                     (concat desktop-environment-screenshot-command
-                             " "
-                             (format desktop-environment-screenshot-delay-argument delay))
-                   desktop-environment-screenshot-command)))
+	(command (if (and delay
+			  (numberp delay)
+			  (> delay 0))
+		     (concat desktop-environment-screenshot-command
+			     " "
+			     (format desktop-environment-screenshot-delay-argument delay))
+		   desktop-environment-screenshot-command)))
     (start-process-shell-command "desktop-environment-screenshot" nil command)))
 
 ;;;###autoload
@@ -459,13 +466,13 @@ In order to delay the screenshot,
 the command `desktop-environment-screenshot-partial-command'."
   (interactive "P")
   (let ((default-directory (expand-file-name desktop-environment-screenshot-directory))
-        (command (if (and delay
-                          (numberp delay)
-                          (> delay 0))
-                     (concat desktop-environment-screenshot-partial-command
-                             " "
-                             (format desktop-environment-screenshot-delay-argument delay))
-                   desktop-environment-screenshot-partial-command)))
+	(command (if (and delay
+			  (numberp delay)
+			  (> delay 0))
+		     (concat desktop-environment-screenshot-partial-command
+			     " "
+			     (format desktop-environment-screenshot-delay-argument delay))
+		   desktop-environment-screenshot-partial-command)))
     (message "Please select the part of your screen to shoot.")
     (start-process-shell-command "desktop-environment-screenshot" nil command)))
 
@@ -505,59 +512,59 @@ the command `desktop-environment-screenshot-partial-command'."
   "Play/pause the music player."
   (interactive)
   (message "%s"
-           (desktop-environment--shell-command-to-string desktop-environment-music-toggle-command)))
+	   (desktop-environment--shell-command-to-string desktop-environment-music-toggle-command)))
 
 (defun desktop-environment-music-previous ()
   "Play the previous song."
   (interactive)
   (message "%s"
-           (desktop-environment--shell-command-to-string desktop-environment-music-previous-command)))
+	   (desktop-environment--shell-command-to-string desktop-environment-music-previous-command)))
 
 (defun desktop-environment-music-next()
   "Play the next song."
   (interactive)
   (message "%s"
-           (desktop-environment--shell-command-to-string desktop-environment-music-next-command)))
+	   (desktop-environment--shell-command-to-string desktop-environment-music-next-command)))
 
 (defun desktop-environment-music-stop ()
   "Stop music player instance."
   (interactive)
   (message "%s"
-           (desktop-environment--shell-command-to-string desktop-environment-music-stop-command)))
+	   (desktop-environment--shell-command-to-string desktop-environment-music-stop-command)))
 
 ;;; Minor mode
 
 (defvar desktop-environment-mode-map
   (let ((desktop-environment--keybindings
-         `(;; Brightness
-           (,(kbd "<XF86MonBrightnessUp>") . ,(function desktop-environment-brightness-increment))
-           (,(kbd "<XF86MonBrightnessDown>") . ,(function desktop-environment-brightness-decrement))
-           (,(kbd "S-<XF86MonBrightnessUp>") . ,(function desktop-environment-brightness-increment-slowly))
-           (,(kbd "S-<XF86MonBrightnessDown>") . ,(function desktop-environment-brightness-decrement-slowly))
-           ;; Volume
-           (,(kbd "<XF86AudioRaiseVolume>") . ,(function desktop-environment-volume-increment))
-           (,(kbd "<XF86AudioLowerVolume>") . ,(function desktop-environment-volume-decrement))
-           (,(kbd "S-<XF86AudioRaiseVolume>") . ,(function desktop-environment-volume-increment-slowly))
-           (,(kbd "S-<XF86AudioLowerVolume>") . ,(function desktop-environment-volume-decrement-slowly))
-           (,(kbd "<XF86AudioMute>") . ,(function desktop-environment-toggle-mute))
-           (,(kbd "<XF86AudioMicMute>") . ,(function desktop-environment-toggle-microphone-mute))
-           ;; Screenshot
-           (,(kbd "S-<print>") . ,(function desktop-environment-screenshot-part))
-           (,(kbd "<print>") . ,(function desktop-environment-screenshot))
-           ;; Screen locking
-           (,(kbd "s-l") . ,(function desktop-environment-lock-screen))
-           (,(kbd "<XF86ScreenSaver>") . ,(function desktop-environment-lock-screen))
-           ;; Wifi controls
-           (,(kbd "<XF86WLAN>") . ,(function desktop-environment-toggle-wifi))
-           ;; Bluetooth controls
-           (,(kbd "<XF86Bluetooth>") . ,(function desktop-environment-toggle-bluetooth))
-           ;; Music controls
-           (,(kbd "<XF86AudioPlay>") . ,(function desktop-environment-toggle-music))
-           (,(kbd "<XF86AudioPause>") . ,(function desktop-environment-toggle-music))
-           (,(kbd "<XF86AudioPrev>") . ,(function desktop-environment-music-previous))
-           (,(kbd "<XF86AudioNext>") . ,(function desktop-environment-music-next))
-           (,(kbd "<XF86AudioStop>") . ,(function desktop-environment-music-stop))))
-        (map (make-sparse-keymap)))
+	 `(;; Brightness
+	   (,(kbd "<XF86MonBrightnessUp>") . ,(function desktop-environment-brightness-increment))
+	   (,(kbd "<XF86MonBrightnessDown>") . ,(function desktop-environment-brightness-decrement))
+	   (,(kbd "S-<XF86MonBrightnessUp>") . ,(function desktop-environment-brightness-increment-slowly))
+	   (,(kbd "S-<XF86MonBrightnessDown>") . ,(function desktop-environment-brightness-decrement-slowly))
+	   ;; Volume
+	   (,(kbd "<XF86AudioRaiseVolume>") . ,(function desktop-environment-volume-increment))
+	   (,(kbd "<XF86AudioLowerVolume>") . ,(function desktop-environment-volume-decrement))
+	   (,(kbd "S-<XF86AudioRaiseVolume>") . ,(function desktop-environment-volume-increment-slowly))
+	   (,(kbd "S-<XF86AudioLowerVolume>") . ,(function desktop-environment-volume-decrement-slowly))
+	   (,(kbd "<XF86AudioMute>") . ,(function desktop-environment-toggle-mute))
+	   (,(kbd "<XF86AudioMicMute>") . ,(function desktop-environment-toggle-microphone-mute))
+	   ;; Screenshot
+	   (,(kbd "S-<print>") . ,(function desktop-environment-screenshot-part))
+	   (,(kbd "<print>") . ,(function desktop-environment-screenshot))
+	   ;; Screen locking
+	   (,(kbd "s-l") . ,(function desktop-environment-lock-screen))
+	   (,(kbd "<XF86ScreenSaver>") . ,(function desktop-environment-lock-screen))
+	   ;; Wifi controls
+	   (,(kbd "<XF86WLAN>") . ,(function desktop-environment-toggle-wifi))
+	   ;; Bluetooth controls
+	   (,(kbd "<XF86Bluetooth>") . ,(function desktop-environment-toggle-bluetooth))
+	   ;; Music controls
+	   (,(kbd "<XF86AudioPlay>") . ,(function desktop-environment-toggle-music))
+	   (,(kbd "<XF86AudioPause>") . ,(function desktop-environment-toggle-music))
+	   (,(kbd "<XF86AudioPrev>") . ,(function desktop-environment-music-previous))
+	   (,(kbd "<XF86AudioNext>") . ,(function desktop-environment-music-next))
+	   (,(kbd "<XF86AudioStop>") . ,(function desktop-environment-music-stop))))
+	(map (make-sparse-keymap)))
     (dolist (keybinding desktop-environment--keybindings)
       (define-key map (car keybinding) (cdr keybinding)))
     map)
@@ -576,21 +583,21 @@ nil."
     (cl-case desktop-environment-update-exwm-global-keys
       (:global
        (when enable
-         (map-keymap (lambda (event definition)
-                       (exwm-input-set-key (vector event) definition))
-                     desktop-environment-mode-map)))
+	 (map-keymap (lambda (event definition)
+		       (exwm-input-set-key (vector event) definition))
+		     desktop-environment-mode-map)))
       (:prefix
        (when (boundp 'exwm-input-prefix-keys)
-         (map-keymap (lambda (event definition)
-                       (ignore definition)
-                       (setq exwm-input-prefix-keys (if enable
-                                                        (cons event exwm-input-prefix-keys)
-                                                      (delq event exwm-input-prefix-keys))))
-                     desktop-environment-mode-map)))
+	 (map-keymap (lambda (event definition)
+		       (ignore definition)
+		       (setq exwm-input-prefix-keys (if enable
+							(cons event exwm-input-prefix-keys)
+						      (delq event exwm-input-prefix-keys))))
+		     desktop-environment-mode-map)))
       ((nil) nil)
       (t
        (message "Ignoring unknown value %s for `desktop-environment-update-exwm-global-keys'"
-                desktop-environment-update-exwm-global-keys)))))
+		desktop-environment-update-exwm-global-keys)))))
 
 ;;;###autoload
 (define-minor-mode desktop-environment-mode
